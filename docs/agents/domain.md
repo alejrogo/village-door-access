@@ -55,7 +55,7 @@ Honor these. If a ticket or suggestion contradicts one, surface the ADR instead 
 | Visit erasure | Delete Visit rows after 90 days. Do not keep names longer “for the log.” | 0004 |
 | Visit count | Lifetime total per Location. Purge must not decrement it. Hoy is counted from remaining rows. | 0004 |
 | Door sticker QR | Encodes `/?location=<Location id>`. Visit still required. Do not put the Access Code in the QR. | 0005 |
-| Lint | Ultracite Oxlint and Oxfmt. Root config copies `core.env` and adds Node. No Biome. | 0006 |
+| Lint | Ultracite Oxlint and Oxfmt. Root config copies `core.env` and adds Node. `@shadcn/lint` and `oxlint-tailwindcss`. `shadcn/no-restyle` off under `components/ui`. jsx-a11y on, including public Visitor pages. No Biome. | 0006 |
 | PWA | Keep `public/manifest.webmanifest` and `public/icon-180.png` linked from `__root.tsx` (`rel=manifest`, apple-touch-icon). No service worker. Do not reintroduce `public/__grok` or `grokPwaPlugin`. | AGENTS.md § PWA |
 
 Reach the matching ADR when the change touches Admin, the Password, Locations, Access Codes, Visits, Visit count, door sticker QRs, or the install-to-home-screen files.

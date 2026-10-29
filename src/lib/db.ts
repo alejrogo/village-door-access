@@ -1,21 +1,22 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 
+import { env } from "@/env";
 import { PrismaClient } from "@/generated/prisma/client";
 
 /**
  * Neon (or any Postgres) when `DATABASE_URL` is set. There is no PGLite
- * fallback — Prisma talks the Postgres protocol only.
+ * fallback — Prisma talks the Postgres protocol only. Typed env:
+ * `src/env.ts`.
  */
 function requireDatabaseUrl(): string {
   const url =
-    typeof process === "undefined" ? undefined : process.env.DATABASE_URL;
-  const trimmed = url?.trim();
-  if (!trimmed) {
+    typeof env.DATABASE_URL === "string" ? env.DATABASE_URL.trim() : "";
+  if (!url) {
     throw new Error(
       "DATABASE_URL is required. Point it at Neon or local Postgres."
     );
   }
-  return trimmed;
+  return url;
 }
 
 const globalRef = globalThis as typeof globalThis & {

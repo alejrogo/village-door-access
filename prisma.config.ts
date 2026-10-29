@@ -1,16 +1,11 @@
-import { existsSync } from "node:fs";
-
 import { defineConfig } from "prisma/config";
 
-if (existsSync(".env.development.local")) {
-  process.loadEnvFile(".env.development.local");
-}
+import { migrateDatabaseUrl } from "./src/env.ts";
 
-const migrateUrl =
-  process.env.DATABASE_URL_UNPOOLED?.trim() ||
-  process.env.DIRECT_URL?.trim() ||
-  process.env.DATABASE_URL?.trim() ||
-  "";
+// `src/env.ts` loads `.env.development.local` before validating. This
+// import runs that load, then resolves the migrate URL (unpooled when
+// the DATABASE_URL host ends with -pooler).
+const migrateUrl = migrateDatabaseUrl();
 
 export default defineConfig({
   migrations: {

@@ -266,7 +266,7 @@ export function LocationQrCard({
               Imprímela y pégala en esta puerta.
             </CardDescription>
           </div>
-          <ChevronDown className="mt-1 size-5 shrink-0 text-muted-foreground transition-transform group-data-[panel-open]/qr:rotate-180" />
+          <ChevronDown className="mt-1 size-5 shrink-0 text-muted-foreground transition-transform group-data-panel-open/qr:rotate-180" />
         </CollapsibleTrigger>
         <CollapsibleContent>
           <CardContent>

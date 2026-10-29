@@ -10,7 +10,7 @@ export function AppErrorComponent({ error }: ErrorComponentProps) {
         <TriangleAlert className="size-10" strokeWidth={2} />
       </span>
       <h1 className="font-display text-xl font-medium">Algo ha fallado</h1>
-      <p className="max-w-md text-sm break-words text-muted-foreground">
+      <p className="max-w-md text-sm wrap-break-word text-muted-foreground">
         {publicErrorMessage(error.message)}
       </p>
     </main>

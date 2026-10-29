@@ -59,7 +59,7 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body className="paper-grain min-h-dvh bg-bg text-fg">
-        <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-4 pt-6 pb-6 sm:px-6 lg:max-w-4xl">
+        <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-4 py-6 sm:px-6 lg:max-w-4xl">
           <header className="mb-8 flex items-center justify-between gap-4">
             <Link className="block min-w-0" to="/">
               <p className="font-display text-2xl leading-tight font-medium tracking-tight text-fg">

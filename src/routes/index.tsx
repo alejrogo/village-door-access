@@ -165,7 +165,7 @@ function Home() {
             </div>
             <div
               aria-hidden="true"
-              className="absolute -left-[9999px] h-0 w-0 overflow-hidden"
+              className="absolute left-[-9999px] size-0 overflow-hidden"
             >
               <label htmlFor="website">Sitio web</label>
               <input
