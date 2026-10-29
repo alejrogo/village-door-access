@@ -1,6 +1,6 @@
 ## What
 
-<!-- What does this PR change, in CONTEXT.md terms (Location, Visit, Access Code, …)? -->
+<!-- What does this PR change, in GLOSSARY.md terms (Location, Visit, Access Code, …)? -->
 
 ## Why
 

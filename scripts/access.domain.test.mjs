@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { test } from "node:test";
+
 import { FIRST_LOCATION_ID } from "../src/lib/access.rules.ts";
 import {
   archiveLocationRecord,
@@ -10,7 +11,7 @@ import {
 } from "../src/lib/access.server.ts";
 import { getPrisma } from "../src/lib/db.ts";
 
-const lastLocationError = /al menos una ubicación/;
+const lastLocationError = /al menos una ubicación/u;
 
 test("purgeExpiredVisits erases old Visit rows and does not decrement Visit count", async () => {
   await getPublicStateImpl();
@@ -81,7 +82,7 @@ test("registerVisitImpl persists the Visit and increments Visit count before Not
     where: { id: FIRST_LOCATION_ID },
   });
   const previous = before?.visitCount ?? 0;
-  const name = `Visitante ${Date.now().toString(36).replace(/\d/g, "n")}`;
+  const name = `Visitante ${Date.now().toString(36).replaceAll(/\d/gu, "n")}`;
 
   process.env.NOTIFY_EMAIL = "operador@example.com";
   process.env.RESEND_API_KEY = "re_test_key";
@@ -135,7 +136,7 @@ test("a repeated name within 90 seconds at the same Location is one Visit", asyn
     where: { id: FIRST_LOCATION_ID },
   });
   const previous = before?.visitCount ?? 0;
-  const name = `Repetida ${Date.now().toString(36).replace(/\d/g, "n")}`;
+  const name = `Repetida ${Date.now().toString(36).replaceAll(/\d/gu, "n")}`;
 
   const first = await registerVisitImpl({
     locationId: FIRST_LOCATION_ID,

@@ -1,12 +1,12 @@
 import { ChevronDown, Download, Printer } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
@@ -26,12 +26,19 @@ import {
   stickerFilename,
 } from "@/lib/location-qr";
 
+function subscribeToPageOrigin(onStoreChange: () => void) {
+  window.addEventListener("popstate", onStoreChange);
+  return () => {
+    window.removeEventListener("popstate", onStoreChange);
+  };
+}
+
 function usePageOrigin(): string {
-  const [origin, setOrigin] = useState("");
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
-  return origin;
+  return useSyncExternalStore(
+    subscribeToPageOrigin,
+    () => window.location.origin,
+    () => ""
+  );
 }
 
 async function downloadStickerPng(name: string, url: string) {
@@ -188,12 +195,19 @@ function printSticker(name: string, url: string) {
     popup.print();
     popup.close();
   };
-  Promise.race([
-    doc.fonts?.ready ?? Promise.resolve(),
-    new Promise((resolve) => {
-      window.setTimeout(resolve, 800);
-    }),
-  ]).then(printNow);
+  const waitForFonts = async () => {
+    await Promise.race([
+      doc.fonts?.ready ?? Promise.resolve(),
+      // oxlint-disable-next-line promise/avoid-new -- timeout has no promise of its own
+      new Promise((resolve) => {
+        window.setTimeout(resolve, 800);
+      }),
+    ]);
+    printNow();
+  };
+  waitForFonts().catch(() => {
+    printNow();
+  });
 }
 
 function LocationQrImage({ label, url }: { label: string; url: string }) {
@@ -202,6 +216,7 @@ function LocationQrImage({ label, url }: { label: string; url: string }) {
     <svg
       aria-label={label}
       className="size-48"
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- the QR is a drawn path, not a bitmap
       role="img"
       viewBox={`0 0 ${size} ${size}`}
       xmlns="http://www.w3.org/2000/svg"
@@ -244,55 +259,60 @@ export function LocationQrCard({
   return (
     <Card>
       <Collapsible>
-        <CollapsibleTrigger className="group/qr flex min-h-11 w-full items-start justify-between gap-3 px-(--card-spacing) text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-          <CardHeader className="flex-1 px-0">
+        <CollapsibleTrigger className="group/qr flex min-h-11 w-full items-start justify-between">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <CardTitle>Pegatina QR</CardTitle>
             <CardDescription>
               Imprímela y pégala en esta puerta.
             </CardDescription>
-          </CardHeader>
+          </div>
           <ChevronDown className="mt-1 size-5 shrink-0 text-muted-foreground transition-transform group-data-[panel-open]/qr:rotate-180" />
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-col items-center gap-4 rounded-xl bg-bg px-5 py-7 text-fg">
-              <div className="text-center">
-                <p className="font-medium text-muted-foreground text-xs uppercase tracking-widest">
-                  Acceso
-                </p>
-                <p className="mt-1 font-medium text-lg tracking-tight">
-                  {locationName}
-                </p>
+          <CardContent>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col items-center gap-4 rounded-xl bg-bg px-5 py-7 text-fg">
+                <div className="text-center">
+                  <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+                    Acceso
+                  </p>
+                  <p className="mt-1 text-lg font-medium tracking-tight">
+                    {locationName}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-surface p-3 shadow-paper">
+                  {url ? (
+                    <LocationQrImage
+                      label={`QR de ${locationName}`}
+                      url={url}
+                    />
+                  ) : (
+                    <div className="size-48" />
+                  )}
+                </div>
               </div>
-              <div className="rounded-lg bg-surface p-3 shadow-[var(--shadow-paper)]">
-                {url ? (
-                  <LocationQrImage label={`QR de ${locationName}`} url={url} />
-                ) : (
-                  <div className="size-48" />
-                )}
+              <div className="flex gap-2">
+                <Button
+                  className="h-11 flex-1"
+                  disabled={!url}
+                  onClick={onDownload}
+                  type="button"
+                  variant="outline"
+                >
+                  <Download data-icon="inline-start" />
+                  Descargar
+                </Button>
+                <Button
+                  className="h-11 flex-1"
+                  disabled={!url}
+                  onClick={onPrint}
+                  type="button"
+                  variant="outline"
+                >
+                  <Printer data-icon="inline-start" />
+                  Imprimir
+                </Button>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                className="h-11 flex-1"
-                disabled={!url}
-                onClick={onDownload}
-                type="button"
-                variant="outline"
-              >
-                <Download data-icon="inline-start" />
-                Descargar
-              </Button>
-              <Button
-                className="h-11 flex-1"
-                disabled={!url}
-                onClick={onPrint}
-                type="button"
-                variant="outline"
-              >
-                <Printer data-icon="inline-start" />
-                Imprimir
-              </Button>
             </div>
           </CardContent>
         </CollapsibleContent>

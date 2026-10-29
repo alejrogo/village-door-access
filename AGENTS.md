@@ -9,7 +9,7 @@ Agents and code speak English. Spanish appears only in UI strings.
 
 ## Domain
 
-Read `CONTEXT.md` before naming a domain concept. ADRs live in `docs/adr/`.
+Read `GLOSSARY.md` before naming a domain concept. ADRs live in `docs/adr/`.
 How to consume them: `docs/agents/domain.md`.
 
 Reach the ADRs when a change touches Admin, the Password, Locations, or Access
@@ -61,7 +61,8 @@ Keep `src/lib/error-component.tsx` as the router `defaultErrorComponent`.
 ## Stack
 
 React 19, TypeScript, Vite 8, TanStack Start / Router, Tailwind v4, @base-ui/react,
-lucide, sonner. Package manager: pnpm.
+lucide, sonner. Lint and format: Ultracite Oxlint and Oxfmt
+(`docs/adr/0006-oxlint.md`). Package manager: pnpm.
 
 ## PWA
 
@@ -95,6 +96,6 @@ See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
-Single-context. Glossary is `CONTEXT.md`. ADRs live in `docs/adr/` (Password,
-archive, no platform Accounts, 90-day Visit erasure). Open-source and PWA
+Single-context. Glossary is `GLOSSARY.md`. ADRs live in `docs/adr/` (Password,
+archive, no platform Accounts, 90-day Visit erasure, Oxlint). Open-source and PWA
 rules are in `docs/agents/domain.md`. See that file before exploring.

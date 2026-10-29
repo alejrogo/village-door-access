@@ -13,15 +13,10 @@ import {
   RefreshCw,
   TriangleAlert,
 } from "lucide-react";
-import {
-  type ChangeEvent,
-  type FormEvent,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { ChangeEvent, FormEvent, ReactNode } from "react";
 import { toast } from "sonner";
+
 import { CodeDigits } from "@/components/code-digits";
 import { LocationPicker } from "@/components/location-picker";
 import { LocationQrCard } from "@/components/location-qr-card";
@@ -37,7 +32,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  type AccessCodeRow,
   adminLogout,
   archiveLocation,
   createLocation,
@@ -48,7 +42,11 @@ import {
   renameLocation,
   restoreLocation,
   rotateCode,
-  type VisitRow,
+} from "@/lib/access.functions";
+import type {
+  AccessCodeRow,
+  AdminAccessState,
+  VisitRow,
 } from "@/lib/access.functions";
 import {
   parseLocationSearch,
@@ -85,15 +83,60 @@ export const Route = createFileRoute("/admin")({
             { codes: [] as AccessCodeRow[] },
           ];
       return { session, state, visitData, codeData };
-    } catch (err) {
-      if (isRedirect(err)) {
-        throw err;
+    } catch (error) {
+      if (isRedirect(error)) {
+        throw error;
       }
-      rethrowPublic(err);
+      rethrowPublic(error);
     }
   },
   component: AdminPage,
 });
+
+function mirrorAdminLoader(
+  initial: {
+    codeData: { codes: AccessCodeRow[] };
+    state: AdminAccessState;
+    visitData: { todayCount: number; totalCount: number; visits: VisitRow[] };
+  },
+  seenLoader: {
+    codeData: { codes: AccessCodeRow[] };
+    state: AdminAccessState;
+    visitData: { todayCount: number; totalCount: number; visits: VisitRow[] };
+  },
+  apply: {
+    setCodes: (codes: AccessCodeRow[]) => void;
+    setRenameValue: (name: string) => void;
+    setSeenLoader: (seen: typeof seenLoader) => void;
+    setState: (state: AdminAccessState) => void;
+    setTodayCount: (count: number) => void;
+    setTotalCount: (count: number) => void;
+    setVisits: (visits: VisitRow[]) => void;
+  }
+) {
+  if (
+    seenLoader.state === initial.state &&
+    seenLoader.visitData === initial.visitData &&
+    seenLoader.codeData === initial.codeData
+  ) {
+    return;
+  }
+  apply.setSeenLoader({
+    codeData: initial.codeData,
+    state: initial.state,
+    visitData: initial.visitData,
+  });
+  apply.setState(initial.state);
+  apply.setVisits(initial.visitData.visits);
+  apply.setTodayCount(initial.visitData.todayCount);
+  apply.setTotalCount(initial.visitData.totalCount);
+  apply.setCodes(initial.codeData.codes);
+  apply.setRenameValue(
+    initial.state.locations.find(
+      (row) => row.id === initial.state.selectedLocationId
+    )?.name ?? ""
+  );
+}
 
 function AdminPage() {
   const initial = Route.useLoaderData();
@@ -114,6 +157,20 @@ function AdminPage() {
       (row) => row.id === initial.state.selectedLocationId
     )?.name ?? ""
   );
+  const [seenLoader, setSeenLoader] = useState({
+    codeData: initial.codeData,
+    state: initial.state,
+    visitData: initial.visitData,
+  });
+  mirrorAdminLoader(initial, seenLoader, {
+    setCodes,
+    setRenameValue,
+    setSeenLoader,
+    setState,
+    setTodayCount,
+    setTotalCount,
+    setVisits,
+  });
 
   const selectedId =
     pickAdminLocationId(state.locations, search.location) ?? "";
@@ -121,30 +178,18 @@ function AdminPage() {
   const locationDataReady = state.selectedLocationId === selectedId;
 
   useEffect(() => {
-    setState(initial.state);
-    setVisits(initial.visitData.visits);
-    setTodayCount(initial.visitData.todayCount);
-    setTotalCount(initial.visitData.totalCount);
-    setCodes(initial.codeData.codes);
-    setRenameValue(
-      initial.state.locations.find(
-        (row) => row.id === initial.state.selectedLocationId
-      )?.name ?? ""
-    );
-  }, [initial.state, initial.visitData, initial.codeData]);
-
-  useEffect(() => {
     if (!selectedId) {
       return;
     }
     let cancelled = false;
-    setLoadingLists(true);
-    Promise.all([
-      getAdminState({ data: { locationId: selectedId } }),
-      listVisits({ data: { locationId: selectedId } }),
-      listAccessCodes({ data: { locationId: selectedId } }),
-    ])
-      .then(([next, visitData, codeData]) => {
+    const load = async () => {
+      setLoadingLists(true);
+      try {
+        const [next, visitData, codeData] = await Promise.all([
+          getAdminState({ data: { locationId: selectedId } }),
+          listVisits({ data: { locationId: selectedId } }),
+          listAccessCodes({ data: { locationId: selectedId } }),
+        ]);
         if (cancelled) {
           return;
         }
@@ -157,17 +202,20 @@ function AdminPage() {
         setTodayCount(visitData.todayCount);
         setTotalCount(visitData.totalCount);
         setCodes(codeData.codes);
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) {
           toast.error("No se ha podido cargar el registro.");
         }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoadingLists(false);
-        }
-      });
+      }
+      if (!cancelled) {
+        setLoadingLists(false);
+      }
+    };
+    load().catch(() => {
+      if (!cancelled) {
+        toast.error("No se ha podido cargar el registro.");
+      }
+    });
     return () => {
       cancelled = true;
     };
@@ -240,9 +288,8 @@ function AdminPage() {
           ? error.message
           : "No se ha podido rotar el código."
       );
-    } finally {
-      setBusy(false);
     }
+    setBusy(false);
   }, [confirmRotate, router, selected?.archived, selectedId]);
 
   const onLogout = useCallback(async () => {
@@ -255,20 +302,19 @@ function AdminPage() {
     setBusy(true);
     try {
       const result = await createLocation({ data: { name: newName } });
-      if (!result.ok) {
+      if (result.ok) {
+        setNewName("");
+        toast.success("Ubicación creada.");
+        await refreshState(result.location.id);
+        await navigate({ search: { location: result.location.id } });
+        await router.invalidate();
+      } else {
         toast.error(result.error);
-        return;
       }
-      setNewName("");
-      toast.success("Ubicación creada.");
-      await refreshState(result.location.id);
-      await navigate({ search: { location: result.location.id } });
-      await router.invalidate();
     } catch {
       toast.error("No se ha podido crear la ubicación.");
-    } finally {
-      setBusy(false);
     }
+    setBusy(false);
   }, [navigate, newName, refreshState, router]);
 
   const onCreateSubmit = useCallback(
@@ -288,18 +334,17 @@ function AdminPage() {
       const result = await renameLocation({
         data: { locationId: selectedId, name: renameValue },
       });
-      if (!result.ok) {
+      if (result.ok) {
+        toast.success("Nombre actualizado.");
+        await refreshState(selectedId);
+        await router.invalidate();
+      } else {
         toast.error(result.error);
-        return;
       }
-      toast.success("Nombre actualizado.");
-      await refreshState(selectedId);
-      await router.invalidate();
     } catch {
       toast.error("No se ha podido cambiar el nombre.");
-    } finally {
-      setBusy(false);
     }
+    setBusy(false);
   }, [refreshState, renameValue, router, selectedId]);
 
   const onArchiveToggle = useCallback(async () => {
@@ -311,23 +356,22 @@ function AdminPage() {
       const result = selected.archived
         ? await restoreLocation({ data: { locationId: selectedId } })
         : await archiveLocation({ data: { locationId: selectedId } });
-      if (!result.ok) {
+      if (result.ok) {
+        toast.success(
+          selected.archived ? "Ubicación restaurada." : "Ubicación archivada."
+        );
+        const next = await refreshState(selectedId);
+        await navigate({
+          search: { location: next.selectedLocationId ?? undefined },
+        });
+        await router.invalidate();
+      } else {
         toast.error(result.error);
-        return;
       }
-      toast.success(
-        selected.archived ? "Ubicación restaurada." : "Ubicación archivada."
-      );
-      const next = await refreshState(selectedId);
-      await navigate({
-        search: { location: next.selectedLocationId ?? undefined },
-      });
-      await router.invalidate();
     } catch {
       toast.error("No se ha podido actualizar la ubicación.");
-    } finally {
-      setBusy(false);
     }
+    setBusy(false);
   }, [navigate, refreshState, router, selected, selectedId]);
 
   const activeCount = state.locations.filter((row) => !row.archived).length;
@@ -336,7 +380,7 @@ function AdminPage() {
     <main className="stagger-in flex flex-1 flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="font-display font-medium text-2xl tracking-tight">
+          <h1 className="font-display text-2xl font-medium tracking-tight">
             Gestión
           </h1>
           <VisitCountLine
@@ -353,48 +397,50 @@ function AdminPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Ubicaciones</CardTitle>
+          <CardTitle size="lg">Ubicaciones</CardTitle>
           <CardDescription>
             Cada ubicación es una puerta, con su propio código.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <LocationPicker
-            locations={state.locations}
-            onChange={onSelectLocation}
-            value={selectedId}
-          />
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="rename-location">Nombre</Label>
-            <div className="flex gap-2">
-              <Input
-                id="rename-location"
-                maxLength={40}
-                onChange={onRenameChange}
-                value={renameValue}
-              />
+        <CardContent>
+          <div className="flex flex-col gap-4">
+            <LocationPicker
+              locations={state.locations}
+              onChange={onSelectLocation}
+              value={selectedId}
+            />
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="rename-location">Nombre</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="rename-location"
+                  maxLength={40}
+                  onChange={onRenameChange}
+                  value={renameValue}
+                />
+                <Button
+                  className="h-11"
+                  disabled={busy || renameValue.trim() === selected?.name}
+                  onClick={onRename}
+                  type="button"
+                  variant="outline"
+                >
+                  Guardar
+                </Button>
+              </div>
+            </div>
+            <div>
               <Button
-                className="h-11"
-                disabled={busy || renameValue.trim() === selected?.name}
-                onClick={onRename}
+                disabled={busy || (!selected?.archived && activeCount <= 1)}
+                onClick={onArchiveToggle}
+                size="sm"
                 type="button"
-                variant="outline"
+                variant="ghost"
               >
-                Guardar
+                <ArchiveRestore data-icon="inline-start" />
+                {selected?.archived ? "Restaurar" : "Archivar"}
               </Button>
             </div>
-          </div>
-          <div>
-            <Button
-              disabled={busy || (!selected?.archived && activeCount <= 1)}
-              onClick={onArchiveToggle}
-              size="sm"
-              type="button"
-              variant="ghost"
-            >
-              <ArchiveRestore data-icon="inline-start" />
-              {selected?.archived ? "Restaurar" : "Archivar"}
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -414,7 +460,7 @@ function AdminPage() {
       />
 
       {initial.session.emailConfigured ? (
-        <p className="rounded-xl bg-chip px-4 py-3 text-muted-foreground text-xs leading-relaxed">
+        <p className="rounded-xl bg-chip px-4 py-3 text-xs leading-relaxed text-muted-foreground">
           Cada visita envía un correo con el nombre, la ubicación, el código y
           la fecha.
         </p>
@@ -428,22 +474,22 @@ function AdminPage() {
       >
         {codes.map((item) => (
           <li
-            className="rounded-xl bg-surface px-4 py-3 shadow-[var(--shadow-paper)]"
+            className="rounded-xl bg-surface px-4 py-3 shadow-paper"
             key={item.id}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-display font-medium text-xl tabular-nums tracking-wide">
+                <p className="font-display text-xl font-medium tracking-wide tabular-nums">
                   {item.code}
                 </p>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   {item.endedAt
                     ? `${formatShortDateTime(item.startedAt)} — ${formatShortDateTime(item.endedAt)}`
                     : `Desde ${formatShortDateTime(item.startedAt)}`}
                 </p>
               </div>
               {item.endedAt ? null : (
-                <span className="shrink-0 rounded-full bg-chip px-2 py-0.5 font-medium text-ok text-xs uppercase tracking-wide">
+                <span className="shrink-0 rounded-full bg-chip px-2 py-0.5 text-xs font-medium tracking-wide text-ok uppercase">
                   Vigente
                 </span>
               )}
@@ -460,21 +506,21 @@ function AdminPage() {
       >
         {visits.map((visit) => (
           <li
-            className="rounded-xl bg-surface px-4 py-3 shadow-[var(--shadow-paper)]"
+            className="rounded-xl bg-surface px-4 py-3 shadow-paper"
             key={visit.id}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate font-medium">{visit.name}</p>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   {formatShortDateTime(visit.visitedAt)} · código {visit.code}
                 </p>
               </div>
               <span
                 className={
                   visit.emailSent
-                    ? "shrink-0 rounded-full bg-chip px-2 py-0.5 font-medium text-ok text-xs uppercase tracking-wide"
-                    : "shrink-0 rounded-full bg-chip px-2 py-0.5 font-medium text-muted-foreground text-xs uppercase tracking-wide"
+                    ? "shrink-0 rounded-full bg-chip px-2 py-0.5 text-xs font-medium tracking-wide text-ok uppercase"
+                    : "shrink-0 rounded-full bg-chip px-2 py-0.5 text-xs font-medium tracking-wide text-muted-foreground uppercase"
                 }
               >
                 {visit.emailSent ? "Enviado" : "Guardado"}
@@ -486,7 +532,7 @@ function AdminPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Nueva ubicación</CardTitle>
+          <CardTitle size="lg">Nueva ubicación</CardTitle>
           <CardDescription>
             Añade otra puerta, con su propio código.
           </CardDescription>
@@ -514,7 +560,7 @@ function AdminPage() {
         </CardContent>
       </Card>
 
-      <p className="text-center text-muted-foreground text-xs">
+      <p className="text-center text-xs text-muted-foreground">
         <Link className="underline-offset-2 hover:underline" to="/">
           Volver al código
         </Link>
@@ -533,7 +579,7 @@ function VisitCountLine({
   totalCount: number;
 }) {
   return (
-    <p className="text-muted-foreground text-sm">
+    <p className="text-sm text-muted-foreground">
       {ready
         ? `Hoy: ${todayCount} ${todayCount === 1 ? "visita" : "visitas"} · Total: ${totalCount}`
         : "Cargando registro…"}
@@ -571,7 +617,7 @@ function CurrentCodeCard({
       <CardContent>
         <CodeDigits code={ready ? code : undefined} size="md" />
         {archived ? (
-          <p className="mt-3 text-muted-foreground text-sm">
+          <p className="mt-3 text-sm text-muted-foreground">
             Esta ubicación está archivada. No aparece en la entrada.
           </p>
         ) : (
@@ -588,7 +634,7 @@ function CurrentCodeCard({
               Rotar código
             </Button>
             {confirmRotate ? (
-              <p className="mt-2 text-muted-foreground text-xs">
+              <p className="mt-2 text-xs text-muted-foreground">
                 El código anterior dejará de abrir la puerta.
               </p>
             ) : null}
@@ -616,26 +662,26 @@ function HistorySection({
   const count = items.filter(Boolean).length;
   let body: ReactNode;
   if (loading) {
-    body = <p className="text-muted-foreground text-sm">Cargando registro…</p>;
+    body = <p className="text-sm text-muted-foreground">Cargando registro…</p>;
   } else if (count === 0) {
     body = (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{emptyTitle}</CardTitle>
+          <CardTitle size="lg">{emptyTitle}</CardTitle>
           <CardDescription>{emptyDescription}</CardDescription>
         </CardHeader>
       </Card>
     );
   } else {
     body = (
-      <ScrollArea viewportClassName="max-h-history overflow-y-auto! p-3">
+      <ScrollArea history>
         <ul className="flex flex-col gap-2 pe-4">{children}</ul>
       </ScrollArea>
     );
   }
   return (
     <section>
-      <h2 className="mb-3 font-display font-medium text-lg">{title}</h2>
+      <h2 className="mb-3 font-display text-lg font-medium">{title}</h2>
       {body}
     </section>
   );

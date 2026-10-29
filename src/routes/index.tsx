@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, Copy, LoaderCircle } from "lucide-react";
-import { type ChangeEvent, type FormEvent, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { toast } from "sonner";
+
 import { CodeDigits } from "@/components/code-digits";
 import { LocationPicker } from "@/components/location-picker";
 import { Button } from "@/components/ui/button";
@@ -96,29 +98,28 @@ function Home() {
         const result = await registerVisit({
           data: { name, locationId: selectedId, website: honeypot },
         });
-        if (!result.ok) {
+        if (result.ok) {
+          setRevealed({
+            locationId: selectedId,
+            code: result.code,
+            at: result.visitedAt,
+          });
+          setName("");
+          toast.success("Visita registrada", {
+            id: toastId,
+            description: result.emailSent
+              ? `Aviso enviado · ${formatDateTime(result.visitedAt)}`
+              : `Queda constancia · ${formatDateTime(result.visitedAt)}`,
+          });
+        } else {
           toast.error(result.error, { id: toastId });
-          return;
         }
-        setRevealed({
-          locationId: selectedId,
-          code: result.code,
-          at: result.visitedAt,
-        });
-        setName("");
-        toast.success("Visita registrada", {
-          id: toastId,
-          description: result.emailSent
-            ? `Aviso enviado · ${formatDateTime(result.visitedAt)}`
-            : `Queda constancia · ${formatDateTime(result.visitedAt)}`,
-        });
       } catch {
         toast.error("No se ha podido registrar. Inténtalo de nuevo.", {
           id: toastId,
         });
-      } finally {
-        setSubmitting(false);
       }
+      setSubmitting(false);
     },
     [honeypot, name, selectedId]
   );
@@ -139,7 +140,7 @@ function Home() {
         <CardContent>
           <form className="flex flex-col gap-4" onSubmit={onSubmit}>
             {requestedUnavailable ? (
-              <p className="text-danger text-sm">
+              <p className="text-sm text-danger">
                 Esta puerta no está disponible.
               </p>
             ) : null}
@@ -221,11 +222,11 @@ function Home() {
         </CardContent>
       </Card>
 
-      <p className="px-1 text-center text-muted-foreground text-xs leading-relaxed lg:col-span-2">
+      <p className="px-1 text-center text-xs leading-relaxed text-muted-foreground lg:col-span-2">
         El código lo rota quien gestiona el acceso. Si no abre, espera un
         momento o avisa en el ayuntamiento.
       </p>
-      <p className="px-1 text-center text-muted-foreground text-xs leading-relaxed lg:col-span-2">
+      <p className="px-1 text-center text-xs leading-relaxed text-muted-foreground lg:col-span-2">
         El nombre se usa solo para el registro de acceso y se borra a los 90
         días. Responsable: Ayuntamiento de Aldearrodrigo.
       </p>

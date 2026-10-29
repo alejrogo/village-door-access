@@ -4,7 +4,7 @@ How the engineering skills should consume this repo's domain documentation when 
 
 ## Before exploring, read these
 
-- **`CONTEXT.md`** at the repo root
+- **`GLOSSARY.md`** at the repo root
 - **`docs/adr/`** — every ADR that touches the area you are about to work in
 - **`CONTRIBUTING.md`** and **`SECURITY.md`** when the change is a public issue, a PR, or auth/privacy
 - **`README.md`** for the open-source contract (MIT, how to run, Visit retention)
@@ -17,7 +17,7 @@ Single-context repo:
 
 ```
 /
-├── CONTEXT.md
+├── GLOSSARY.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── LICENSE                 ← MIT
@@ -26,7 +26,8 @@ Single-context repo:
 │   ├── 0002-locations-are-archived.md
 │   ├── 0003-no-platform-accounts.md
 │   ├── 0004-visit-retention.md
-│   └── 0005-qr-encodes-location-url.md
+│   ├── 0005-qr-encodes-location-url.md
+│   └── 0006-oxlint.md
 ├── public/
 │   ├── manifest.webmanifest
 │   └── icon-180.png
@@ -35,7 +36,7 @@ Single-context repo:
 
 ## Use the glossary's vocabulary
 
-When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
+When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `GLOSSARY.md`. Don't drift to synonyms the glossary explicitly avoids.
 
 Agents and code speak English. Spanish appears only in UI strings.
 
@@ -54,6 +55,7 @@ Honor these. If a ticket or suggestion contradicts one, surface the ADR instead 
 | Visit erasure | Delete Visit rows after 90 days. Do not keep names longer “for the log.” | 0004 |
 | Visit count | Lifetime total per Location. Purge must not decrement it. Hoy is counted from remaining rows. | 0004 |
 | Door sticker QR | Encodes `/?location=<Location id>`. Visit still required. Do not put the Access Code in the QR. | 0005 |
+| Lint | Ultracite Oxlint and Oxfmt. Root config copies `core.env` and adds Node. No Biome. | 0006 |
 | PWA | Keep `public/manifest.webmanifest` and `public/icon-180.png` linked from `__root.tsx` (`rel=manifest`, apple-touch-icon). No service worker. Do not reintroduce `public/__grok` or `grokPwaPlugin`. | AGENTS.md § PWA |
 
 Reach the matching ADR when the change touches Admin, the Password, Locations, Access Codes, Visits, Visit count, door sticker QRs, or the install-to-home-screen files.

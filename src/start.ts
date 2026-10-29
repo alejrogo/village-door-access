@@ -13,8 +13,8 @@ const csrfMiddleware = createCsrfMiddleware({
 });
 
 const securityHeaders = createMiddleware({ type: "request" }).server(
-  async ({ handlerType, next }) => {
-    const result = await next();
+  async ({ handlerType, next: continueRequest }) => {
+    const result = await continueRequest();
     const { headers } = result.response;
     const contentType = headers.get("content-type") ?? "";
     if (

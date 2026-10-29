@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+
 import { registerVisitInput } from "../src/lib/access.input.ts";
 
-const invalidLocationId = /Invalid locationId/;
-const invalidName = /Invalid name/;
+const invalidLocationId = /Invalid locationId/u;
+const invalidName = /Invalid name/u;
 
 test("registerVisitInput rejects missing fields", () => {
   assert.throws(() => registerVisitInput({}), invalidLocationId);

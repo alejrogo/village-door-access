@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+
 import { locationVisitUrl, stickerFilename } from "../src/lib/location-qr.ts";
 
-const fourDigitPng = /^\d{4}\.png$/;
+const fourDigitPng = /^\d{4}\.png$/u;
 
 test("locationVisitUrl focuses a Location and does not carry an Access Code", () => {
   const url = locationVisitUrl(

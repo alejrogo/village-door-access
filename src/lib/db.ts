@@ -1,4 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
+
 import { PrismaClient } from "@/generated/prisma/client";
 
 /**
@@ -23,7 +24,7 @@ const globalRef = globalThis as typeof globalThis & {
 
 function createPrisma(): PrismaClient {
   if (typeof window !== "undefined") {
-    throw new Error(
+    throw new TypeError(
       "@/lib/db is server-only — call getPrisma() from a createServerFn " +
         "handler or a server route loader, never from client code."
     );

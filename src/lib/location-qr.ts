@@ -48,9 +48,9 @@ export function locationQrPath(url: string): { d: string; size: number } {
 export function stickerFilename(locationName: string): string {
   const slug = locationName
     .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .replaceAll(/[\u0300-\u036F]/gu, "")
+    .replaceAll(/[^a-zA-Z0-9]+/gu, "-")
+    .replaceAll(/^-+|-+$/gu, "")
     .toLowerCase();
   return `qr-${slug || "ubicacion"}.png`;
 }

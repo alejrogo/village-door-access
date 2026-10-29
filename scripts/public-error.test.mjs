@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+
 import { publicErrorMessage, rethrowPublic } from "../src/lib/public-error.ts";
 
 const fallback = "Ha ocurrido un error inesperado. Recarga la página.";

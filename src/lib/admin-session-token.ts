@@ -3,6 +3,7 @@
  * v1 Operator auth is one Password, not per-person identity (ADR-0001).
  */
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+
 import { DEMO_PASSWORD, parsePassword } from "@/lib/access.rules";
 
 export const SESSION_HOURS = 12;
@@ -16,7 +17,7 @@ export function getAdminPassword(): string {
   if (fromEnv && fromEnv.length > 0) {
     const parsed = parsePassword(fromEnv);
     if (typeof parsed !== "string") {
-      throw new Error(
+      throw new TypeError(
         "ADMIN_PASSWORD must be at least 8 characters (at most 128)."
       );
     }

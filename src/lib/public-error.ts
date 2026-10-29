@@ -1,6 +1,6 @@
 const FALLBACK = "Ha ocurrido un error inesperado. Recarga la página.";
 
-const INTERNAL = /prisma|database_url|econn|password|secret|stack|errno/i;
+const INTERNAL = /prisma|database_url|econn|password|secret|stack|errno/iu;
 
 /** Visitor-facing copy. Hide implementation details from thrown Error messages. */
 export function publicErrorMessage(message: string | undefined): string {
