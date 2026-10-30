@@ -59,7 +59,7 @@ Local Docker values live in `.env.development.local` (gitignored). Vite, Prisma,
 | --- | --- |
 | `pnpm dev` | Vite on `0.0.0.0:8080` |
 | `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm lint` | Ultracite check (Oxlint + Oxfmt) |
+| `pnpm check` | Ultracite check (Oxlint + Oxfmt) |
 | `pnpm test` | Node tests under `scripts/**/*.test.mjs` (needs `DATABASE_URL`) |
 | `pnpm build` | `prisma generate`, `prisma migrate deploy`, then the Nitro / Vercel bundle |
 | `pnpm db:migrate` | `prisma migrate deploy` (unpooled URL if `DATABASE_URL_UNPOOLED` is set) |

@@ -109,7 +109,7 @@ pnpm dev          # 0.0.0.0:8080
 pnpm build        # prisma generate + migrate deploy + production build
 pnpm typecheck
 pnpm test         # scripts/**/*.test.mjs (needs DATABASE_URL)
-pnpm lint
+pnpm check
 ```
 
 `startup.sh` brings the dev server back after a restart. Keep it in sync with
