@@ -34,5 +34,5 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:migrate
       - run: pnpm typecheck
-      - run: pnpm lint
+      - run: pnpm check
       - run: pnpm test

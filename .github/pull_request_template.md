@@ -9,6 +9,6 @@
 ## Check
 
 - [ ] UI strings are Spanish; everything else is English
-- [ ] `pnpm typecheck` and `pnpm lint` pass
+- [ ] `pnpm typecheck` and `pnpm check` pass
 - [ ] Schema changes are a new `migrations/000N_*.sql` file
 - [ ] Glossary / ADR updated if a term or hard decision changed

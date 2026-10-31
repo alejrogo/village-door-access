@@ -11,7 +11,7 @@ export function AppErrorComponent({ error }: ErrorComponentProps) {
       </span>
       <h1 className="font-display text-xl font-medium">Algo ha fallado</h1>
       <p className="max-w-md text-sm wrap-break-word text-muted-foreground">
-        {publicErrorMessage(error.message)}
+        {publicErrorMessage(error)}
       </p>
     </main>
   );
