@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+
 import { cn } from "@/lib/utils";
 
 function Card({
@@ -9,7 +10,7 @@ function Card({
   return (
     <div
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-card-foreground text-sm shadow-[var(--shadow-paper)] [--card-spacing:--spacing(4)] has-[>img:first-child]:pt-0 has-data-[slot=card-footer]:pb-0 data-[size=sm]:has-data-[slot=card-footer]:pb-0 data-[size=sm]:[--card-spacing:--spacing(3)] *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground shadow-paper [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
         className
       )}
       data-size={size}
@@ -32,11 +33,18 @@ function CardHeader({ className, ...props }: ComponentProps<"div">) {
   );
 }
 
-function CardTitle({ className, ...props }: ComponentProps<"div">) {
+function CardTitle({
+  className,
+  size = "default",
+  ...props
+}: ComponentProps<"div"> & { size?: "default" | "lg" }) {
   return (
     <div
       className={cn(
-        "font-display font-medium text-base leading-snug group-data-[size=sm]/card:text-sm",
+        "font-display leading-snug font-medium",
+        size === "lg"
+          ? "text-lg"
+          : "text-base group-data-[size=sm]/card:text-sm",
         className
       )}
       data-slot="card-title"
@@ -48,7 +56,7 @@ function CardTitle({ className, ...props }: ComponentProps<"div">) {
 function CardDescription({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn("text-sm text-muted-foreground", className)}
       data-slot="card-description"
       {...props}
     />

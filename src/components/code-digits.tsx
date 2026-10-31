@@ -30,6 +30,7 @@ export function CodeDigits({
         "grid grid-cols-4",
         size === "lg" ? "gap-2 sm:gap-3" : "gap-2"
       )}
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- four digits share one accessible name; an img cannot render them
       role="img"
     >
       {digits.map((slot) => (
@@ -37,8 +38,8 @@ export function CodeDigits({
           className={cn(
             "flex items-center justify-center rounded-lg bg-chip text-fg tabular-nums",
             size === "lg"
-              ? "h-20 font-display font-medium text-5xl tracking-wide sm:h-24 sm:text-6xl"
-              : "h-14 font-display font-medium text-3xl"
+              ? "h-20 font-display text-5xl font-medium tracking-wide sm:h-24 sm:text-6xl"
+              : "h-14 font-display text-3xl font-medium"
           )}
           key={slot.id}
         >

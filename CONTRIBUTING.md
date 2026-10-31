@@ -4,7 +4,7 @@ Thanks for helping. This repo is Village door access, an open-source door-access
 
 ## Before you write code
 
-1. Read [`CONTEXT.md`](./CONTEXT.md). Use those terms in issues, commits, tests, and identifiers. Do not call a Location a gym, site, or door-record.
+1. Read [`GLOSSARY.md`](./GLOSSARY.md). Use those terms in issues, commits, tests, and identifiers. Do not call a Location a gym, site, or door-record.
 2. Read the ADRs that touch your change under [`docs/adr/`](./docs/adr/).
 3. Open or claim an issue first for anything larger than a typo. Labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`.
 
@@ -32,7 +32,7 @@ Before you push:
 
 ```sh
 pnpm typecheck
-pnpm lint
+pnpm check
 pnpm test
 ```
 
@@ -41,7 +41,7 @@ pnpm test
 ## How to change things
 
 - **Schema:** edit `prisma/schema.prisma` and add a Prisma migration. Never edit a file that has already been applied.
-- **Domain behaviour:** update `CONTEXT.md` in the same change if you introduce or rename a term. Offer an ADR only when the choice is hard to reverse, surprising, and a real trade-off.
+- **Domain behaviour:** update `GLOSSARY.md` in the same change if you introduce or rename a term. Offer an ADR only when the choice is hard to reverse, surprising, and a real trade-off.
 - **Auth:** keep the shared Password. Letters, digits, and symbols are allowed (8–128 characters); do not add complexity rules or remount Better Auth, Google, or X. See ADR 0001 and 0003.
 - **Locations:** archive and restore; do not hard-delete. See ADR 0002.
 - **Visits:** erase rows after 90 days. Do not keep names longer. **Visit count** is the lifetime total and must not drop when rows are purged. See ADR 0004.

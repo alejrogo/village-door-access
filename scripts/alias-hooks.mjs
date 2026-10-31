@@ -1,8 +1,8 @@
-import { dirname, join } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 
-const srcRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "src");
-const knownSpecifierExtension = /\.(ts|tsx|js|mjs|cjs|json)$/i;
+const srcRoot = path.join(import.meta.dirname, "..", "src");
+const knownSpecifierExtension = /\.(?<ext>ts|tsx|js|mjs|cjs|json)$/iu;
 
 export function resolve(specifier, context, nextResolve) {
   if (specifier.startsWith("@/")) {
@@ -10,7 +10,7 @@ export function resolve(specifier, context, nextResolve) {
     if (!knownSpecifierExtension.test(rel)) {
       rel = `${rel}.ts`;
     }
-    return nextResolve(pathToFileURL(join(srcRoot, rel)).href, context);
+    return nextResolve(pathToFileURL(path.join(srcRoot, rel)).href, context);
   }
   return nextResolve(specifier, context);
 }

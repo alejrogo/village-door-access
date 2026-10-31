@@ -7,8 +7,10 @@ import {
 } from "@tanstack/react-router";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster } from "sonner";
+
 import { SiteFooter } from "@/components/site-footer";
 import { getAdminSession } from "@/lib/access.functions";
+
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Acceso";
@@ -57,15 +59,15 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body className="paper-grain min-h-dvh bg-bg text-fg">
-        <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-4 pt-6 pb-6 sm:px-6 lg:max-w-4xl">
+        <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-4 py-6 sm:px-6 lg:max-w-4xl">
           <header className="mb-8 flex items-center justify-between gap-4">
             <Link className="block min-w-0" to="/">
-              <p className="font-display font-medium text-2xl text-fg leading-tight tracking-tight">
+              <p className="font-display text-2xl leading-tight font-medium tracking-tight text-fg">
                 Acceso
               </p>
             </Link>
             <Link
-              className="inline-flex min-h-11 shrink-0 items-center font-medium text-muted-foreground text-sm transition-colors hover:text-fg"
+              className="inline-flex min-h-11 shrink-0 items-center text-sm font-medium text-muted-foreground transition-colors hover:text-fg"
               to={session.ok ? "/admin" : "/login"}
             >
               Gestión
@@ -79,7 +81,7 @@ function RootDocument() {
           position="top-center"
           toastOptions={{
             className:
-              "!bg-surface !text-fg !border-border !shadow-[var(--shadow-paper)] font-sans",
+              "!bg-surface !text-fg !border-border !shadow-paper font-sans",
           }}
         />
         <SpeedInsights />

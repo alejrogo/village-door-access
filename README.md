@@ -2,7 +2,7 @@
 
 Open-source door access for a village site. A visitor picks a **Location** (any physical door — gym hall, pavilion, pool), leaves their name, and sees that Location’s four-digit **Access Code**. An operator opens **Admin** (Gestión) with one shared **Password**, adds Locations, rotates codes, and reads the visit log.
 
-The visitor UI is Spanish. Code, issues, and docs are English. Domain words live in [`CONTEXT.md`](./CONTEXT.md).
+The visitor UI is Spanish. Code, issues, and docs are English. Domain words live in [`GLOSSARY.md`](./GLOSSARY.md).
 
 **v0.1.0** is usable: seed Location **Acceso 1**, visit registration, per-Location Access Codes, archive/restore, Password gate at `/login`.
 
@@ -59,7 +59,7 @@ Local Docker values live in `.env.development.local` (gitignored). Vite, Prisma,
 | --- | --- |
 | `pnpm dev` | Vite on `0.0.0.0:8080` |
 | `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm lint` | Biome |
+| `pnpm check` | Ultracite check (Oxlint + Oxfmt) |
 | `pnpm test` | Node tests under `scripts/**/*.test.mjs` (needs `DATABASE_URL`) |
 | `pnpm build` | `prisma generate`, `prisma migrate deploy`, then the Nitro / Vercel bundle |
 | `pnpm db:migrate` | `prisma migrate deploy` (unpooled URL if `DATABASE_URL_UNPOOLED` is set) |
@@ -108,7 +108,7 @@ HTTPS is required for the Admin cookie’s `Secure` flag in production.
 | `src/lib/access.*` | Locations, Access Codes, Visits |
 | `src/lib/admin-session.server.ts` | Shared Password session |
 | `prisma/` | Schema and migrations. Do not edit applied migration files |
-| `CONTEXT.md` | Glossary |
+| `GLOSSARY.md` | Glossary |
 | `docs/adr/` | Why we chose this Password, archive, no platform Accounts, 90-day Visit erasure |
 | `docs/agents/` | How agent skills talk to GitHub Issues |
 

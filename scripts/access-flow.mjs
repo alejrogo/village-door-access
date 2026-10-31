@@ -1,19 +1,15 @@
 import { mkdir } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import path from "node:path";
+
 import { chromium } from "playwright";
 
 const base = process.argv[2] || "http://127.0.0.1:8080";
-const revealedCodeLabel = /aria-label="Código \d \d \d \d"/;
-const todayVisitCount = /Hoy: \d+ visitas?/;
-const lifetimeVisitCount = /Total: \d+/;
-const todayVisitLine = /Hoy:[^\n]+/;
-const shotDir = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "..",
-  "screenshots"
-);
-const shot = (name) => join(shotDir, name);
+const revealedCodeLabel = /aria-label="Código \d \d \d \d"/u;
+const todayVisitCount = /Hoy: \d+ visitas?/u;
+const lifetimeVisitCount = /Total: \d+/u;
+const todayVisitLine = /Hoy:[^\n]+/u;
+const shotDir = path.join(import.meta.dirname, "..", "screenshots");
+const shot = (name) => path.join(shotDir, name);
 
 await mkdir(shotDir, { recursive: true });
 
@@ -42,7 +38,7 @@ async function run(label, viewport, fn) {
 await run("desktop-flow", { height: 800, width: 1280 }, async (page) => {
   await page.goto(`${base}/`, { waitUntil: "domcontentloaded" });
   await page.locator('[aria-label="Código oculto"]').waitFor();
-  const homeText = await page.locator("body").innerText();
+  const homeText = await page.locator("body").textContent();
   if (!homeText.includes("se borra a los 90 días")) {
     throw new Error("missing visit retention notice");
   }
@@ -53,7 +49,7 @@ await run("desktop-flow", { height: 800, width: 1280 }, async (page) => {
   await page.getByRole("tab", { name: "Acceso 1" }).click();
   await page.screenshot({ path: shot("app-preview.png") });
 
-  const visitor = `María ${Date.now().toString(36).replace(/\d/g, "n")}`;
+  const visitor = `María ${Date.now().toString(36).replaceAll(/\d/gu, "n")}`;
   await page.getByLabel("Nombre y apellidos").fill(visitor);
   await page.getByRole("button", { name: "Registrar visita" }).click();
   await page
@@ -68,7 +64,7 @@ await run("desktop-flow", { height: 800, width: 1280 }, async (page) => {
   await page
     .getByRole("heading", { exact: true, name: "Gestión" })
     .waitFor({ timeout: 8000 });
-  const adminText = await page.locator("body").innerText();
+  const adminText = await page.locator("body").textContent();
   if (
     !(todayVisitCount.test(adminText) && lifetimeVisitCount.test(adminText))
   ) {
@@ -86,7 +82,7 @@ await run("desktop-flow", { height: 800, width: 1280 }, async (page) => {
   const before = await page
     .locator("[aria-label^='Código']")
     .first()
-    .innerText();
+    .textContent();
   const rotate = page.getByRole("button", { name: "Rotar código" });
   await rotate.click();
   await rotate.click();
@@ -94,7 +90,7 @@ await run("desktop-flow", { height: 800, width: 1280 }, async (page) => {
   const after = await page
     .locator("[aria-label^='Código']")
     .first()
-    .innerText();
+    .textContent();
   if (before === after) {
     throw new Error(`code did not rotate: ${before}`);
   }

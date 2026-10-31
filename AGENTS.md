@@ -9,7 +9,7 @@ Agents and code speak English. Spanish appears only in UI strings.
 
 ## Domain
 
-Read `CONTEXT.md` before naming a domain concept. ADRs live in `docs/adr/`.
+Read `GLOSSARY.md` before naming a domain concept. ADRs live in `docs/adr/`.
 How to consume them: `docs/agents/domain.md`.
 
 Reach the ADRs when a change touches Admin, the Password, Locations, or Access
@@ -39,14 +39,45 @@ Postgres via `getPrisma()` from `@/lib/db` (Prisma + `pg`). `DATABASE_URL`
 is required — there is no PGLite fallback. Schema lives in `prisma/`; add
 migrations with Prisma, never inline SQL in server functions. Neon applies
 them in `pnpm db:migrate` (`prisma migrate deploy`, first half of
-`pnpm build`). Prefer `DATABASE_URL_UNPOOLED` for that CLI step.
+`pnpm build`). `prisma.config.ts` calls `migrateDatabaseUrl()` from
+`src/env.ts`.
 
 Location data is village-shared, not per-user.
 
 Do not commit a `.env` file. Local Docker uses `.env.development.local`
 (gitignored). On deploy set `DATABASE_URL`, `ADMIN_PASSWORD`, and
 `ADMIN_SESSION_SECRET`. Visit Notices need `NOTIFY_EMAIL` and
-`RESEND_API_KEY`. Only `VITE_`-prefixed vars reach the browser.
+`RESEND_API_KEY`. Only `VITE_`-prefixed vars reach the browser. None are
+defined.
+
+## Env
+
+Typed server env is `src/env.ts` (`@t3-oss/env-core`, the Vite equivalent of
+`@t3-oss/env-nextjs`). It reads `process.env`. The client schema is empty.
+
+| Key | When it is required |
+| --- | --- |
+| `DATABASE_URL` | Always, for the app. A pooled Neon URL is fine at runtime. |
+| `DATABASE_URL_UNPOOLED` | When the `DATABASE_URL` host ends with `-pooler`. Migrate uses it. |
+| `DIRECT_URL` | Optional migrate fallback when the host is not a pooler. |
+| `ADMIN_PASSWORD` | Optional for the local demo. 8–128 characters when set. |
+| `ADMIN_SESSION_SECRET` | When `ADMIN_PASSWORD` is set. |
+| `NOTIFY_EMAIL` | Optional. Visit Notices. |
+| `RESEND_API_KEY` | With `NOTIFY_EMAIL`, to send a Notice. |
+| `NOTIFY_FROM` | Optional sender. Defaults to `Acceso <acceso@localhost>`. |
+
+Operator session and Notice code still read `process.env` at call time.
+`src/env.ts` checks the same keys when that module loads with `DATABASE_URL`
+set.
+
+## Neon
+
+Open the database in the Neon console for this project. Do not use neon.new.
+
+Preview and production build with `pnpm build` (`prisma generate`, then
+`prisma migrate deploy`, then `vite build`). Set `DATABASE_URL_UNPOOLED`
+before that migrate when `DATABASE_URL` is a pooler host. The Vercel function
+region is `fra1`. Keep the Neon compute in that region.
 
 ## Routes
 
@@ -61,7 +92,10 @@ Keep `src/lib/error-component.tsx` as the router `defaultErrorComponent`.
 ## Stack
 
 React 19, TypeScript, Vite 8, TanStack Start / Router, Tailwind v4, @base-ui/react,
-lucide, sonner. Package manager: pnpm.
+lucide, sonner. Lint and format: Ultracite Oxlint and Oxfmt
+(`docs/adr/0006-oxlint.md`), with `@shadcn/lint` and `oxlint-tailwindcss`.
+`shadcn/no-restyle` is off under `src/components/ui`. jsx-a11y stays on for
+the public Visitor pages. Package manager: pnpm.
 
 ## PWA
 
@@ -75,7 +109,7 @@ pnpm dev          # 0.0.0.0:8080
 pnpm build        # prisma generate + migrate deploy + production build
 pnpm typecheck
 pnpm test         # scripts/**/*.test.mjs (needs DATABASE_URL)
-pnpm lint
+pnpm check
 ```
 
 `startup.sh` brings the dev server back after a restart. Keep it in sync with
@@ -95,6 +129,6 @@ See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
-Single-context. Glossary is `CONTEXT.md`. ADRs live in `docs/adr/` (Password,
-archive, no platform Accounts, 90-day Visit erasure). Open-source and PWA
+Single-context. Glossary is `GLOSSARY.md`. ADRs live in `docs/adr/` (Password,
+archive, no platform Accounts, 90-day Visit erasure, Oxlint). Open-source and PWA
 rules are in `docs/agents/domain.md`. See that file before exploring.

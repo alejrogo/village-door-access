@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+
 import { FIRST_LOCATION_ID } from "../src/lib/access.rules.ts";
 import { getPrisma } from "../src/lib/db.ts";
 

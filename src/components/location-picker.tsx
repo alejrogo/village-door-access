@@ -1,4 +1,6 @@
-import { type ChangeEvent, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
+
 import { locationPickerMode } from "@/lib/access.rules";
 import type { LocationRow } from "@/lib/access.types";
 import { cn } from "@/lib/utils";
@@ -48,7 +50,7 @@ export function LocationPicker({
       <label className="block">
         <span className="sr-only">{label}</span>
         <select
-          className="h-12 w-full min-w-0 rounded-lg bg-surface px-3.5 text-base text-fg shadow-[0_0_0_1px_var(--color-border)] outline-none focus-visible:shadow-[0_0_0_2px_var(--color-ring)]"
+          className="h-12 w-full min-w-0 rounded-lg bg-surface px-3.5 text-base text-fg shadow-line outline-none focus-visible:shadow-focus"
           onChange={handleSelectChange}
           value={value}
         >
@@ -105,10 +107,10 @@ function LocationTab({
     <button
       aria-selected={selected}
       className={cn(
-        "h-11 min-h-11 rounded-lg px-3 font-medium text-sm transition-colors",
+        "h-11 min-h-11 rounded-lg px-3 text-sm font-medium transition-colors",
         selected
           ? "bg-primary text-primary-fg"
-          : "bg-surface text-fg shadow-[0_0_0_1px_var(--color-border)] hover:bg-chip"
+          : "bg-surface text-fg shadow-line hover:bg-chip"
       )}
       onClick={handleClick}
       role="tab"
@@ -116,7 +118,7 @@ function LocationTab({
     >
       {name}
       {archived ? (
-        <span className="ml-2 font-normal text-xs opacity-70">Archivada</span>
+        <span className="ml-2 text-xs font-normal opacity-70">Archivada</span>
       ) : null}
     </button>
   );

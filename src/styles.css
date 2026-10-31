@@ -45,6 +45,8 @@
     0 0 0 1px color-mix(in oklab, var(--color-fg) 8%, transparent),
     0 1px 2px color-mix(in oklab, var(--color-fg) 5%, transparent),
     0 16px 32px -20px color-mix(in oklab, var(--color-fg) 18%, transparent);
+  --shadow-line: 0 0 0 1px var(--color-border);
+  --shadow-focus: 0 0 0 2px var(--color-ring);
 }
 
 @layer base {

@@ -22,7 +22,7 @@ export function parsePassword(raw: string): string | { error: string } {
 }
 
 export function parseLocationName(raw: string): string | { error: string } {
-  const name = raw.replace(/\s+/g, " ").trim();
+  const name = raw.replaceAll(/\s+/gu, " ").trim();
   if (name.length < 2) {
     return { error: "Escribe un nombre para la ubicación." };
   }

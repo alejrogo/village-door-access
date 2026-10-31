@@ -1,5 +1,7 @@
 import { randomInt, randomUUID } from "node:crypto";
-import { type Location, Prisma } from "@/generated/prisma/client";
+
+import { Prisma } from "@/generated/prisma/client";
+import type { Location } from "@/generated/prisma/client";
 import {
   FIRST_LOCATION_ID,
   FIRST_LOCATION_NAME,
@@ -7,19 +9,20 @@ import {
   VISIT_RETENTION_DAYS,
 } from "@/lib/access.rules";
 import {
+  getAdminPassword,
+  passwordsMatch,
+  readSubmittedPassword,
+} from "@/lib/admin-session-token";
+import {
   clearAdminSession,
   isAdminSession,
   requireAdmin,
   writeAdminSession,
 } from "@/lib/admin-session.server";
-import {
-  getAdminPassword,
-  passwordsMatch,
-  readSubmittedPassword,
-} from "@/lib/admin-session-token";
 import { getPrisma } from "@/lib/db";
 import { isEmailConfigured, sendVisitEmail } from "@/lib/email.server";
 import { pickPublicLocationId } from "@/lib/location-search";
+
 import type {
   AccessCodeRow,
   AdminAccessState,
@@ -113,11 +116,11 @@ async function ensureOpenHistory(
         startedAt: new Date(startedAt),
       },
     });
-  } catch (err) {
-    if (isPrismaCode(err, "P2002")) {
+  } catch (error) {
+    if (isPrismaCode(error, "P2002")) {
       return;
     }
-    throw err;
+    throw error;
   }
 }
 
@@ -192,7 +195,7 @@ async function ensureLocations(): Promise<Location[]> {
   const rows = await listLocationRecords({ includeArchived: true });
   const ready: Location[] = [];
   for (const row of rows) {
-    // biome-ignore lint/performance/noAwaitInLoops: Rotation must finish per Location
+    // oxlint-disable-next-line eslint/no-await-in-loop -- each Location must be ready before the next starts
     ready.push(await ensureLocationReady(row));
   }
   return ready;
@@ -217,7 +220,7 @@ function pickLocation(
 const VISITOR_NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M}\s.'’-]*$/u;
 
 function normalizeName(raw: string): string | { error: string } {
-  const name = raw.replace(/\s+/g, " ").trim();
+  const name = raw.replaceAll(/\s+/gu, " ").trim();
   if (name.length < 2) {
     return { error: "Escribe tu nombre y apellidos." };
   }
@@ -510,14 +513,14 @@ export async function renameLocationImpl(input: {
       data: { name },
       where: { id: input.locationId },
     });
-  } catch (err) {
-    if (isPrismaCode(err, "P2025")) {
+  } catch (error) {
+    if (isPrismaCode(error, "P2025")) {
       return { error: "Esa ubicación no existe.", ok: false };
     }
-    if (isPrismaCode(err, "P2002")) {
+    if (isPrismaCode(error, "P2002")) {
       return { error: "Ya existe una ubicación con ese nombre.", ok: false };
     }
-    throw err;
+    throw error;
   }
   const row = await getLocationRecord(input.locationId);
   if (!row) {
@@ -568,11 +571,11 @@ export async function restoreLocationImpl(input: {
       data: { archivedAt: null },
       where: { id: input.locationId },
     });
-  } catch (err) {
-    if (isPrismaCode(err, "P2025")) {
+  } catch (error) {
+    if (isPrismaCode(error, "P2025")) {
       return { error: "Esa ubicación no existe.", ok: false };
     }
-    throw err;
+    throw error;
   }
   return { ok: true };
 }

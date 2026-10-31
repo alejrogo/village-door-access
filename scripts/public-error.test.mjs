@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+
 import { publicErrorMessage, rethrowPublic } from "../src/lib/public-error.ts";
 
 const fallback = "Ha ocurrido un error inesperado. Recarga la página.";
@@ -16,6 +17,11 @@ test("publicErrorMessage hides implementation details", () => {
     fallback
   );
   assert.equal(publicErrorMessage(undefined), fallback);
+  assert.equal(
+    publicErrorMessage(new Error("DATABASE_URL is required")),
+    fallback
+  );
+  assert.equal(publicErrorMessage(new Error("No autorizado")), "No autorizado");
 });
 
 test("rethrowPublic replaces a DATABASE_URL throw so SSR cannot serialize it", () => {

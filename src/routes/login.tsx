@@ -5,8 +5,10 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
-import { type ChangeEvent, type FormEvent, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -41,17 +43,16 @@ function Login() {
       setBusy(true);
       try {
         const result = await adminLogin({ data: { password } });
-        if (!result.ok) {
+        if (result.ok) {
+          await router.invalidate();
+          await router.navigate({ to: "/admin" });
+        } else {
           toast.error(result.error);
-          return;
         }
-        await router.invalidate();
-        await router.navigate({ to: "/admin" });
       } catch {
         toast.error("No se ha podido entrar.");
-      } finally {
-        setBusy(false);
       }
+      setBusy(false);
     },
     [password, router]
   );
@@ -99,7 +100,7 @@ function Login() {
           </form>
         </CardContent>
       </Card>
-      <p className="text-center text-muted-foreground text-xs">
+      <p className="text-center text-xs text-muted-foreground">
         <Link className="underline-offset-2 hover:underline" to="/">
           Volver al código
         </Link>

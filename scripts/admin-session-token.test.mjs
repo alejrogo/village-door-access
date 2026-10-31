@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
+
 import {
   getAdminPassword,
   issueAdminToken,
@@ -10,8 +11,8 @@ import {
 
 const savedPassword = process.env.ADMIN_PASSWORD;
 const savedSecret = process.env.ADMIN_SESSION_SECRET;
-const missingSessionSecret = /ADMIN_SESSION_SECRET/;
-const invalidAdminPassword = /ADMIN_PASSWORD/;
+const missingSessionSecret = /ADMIN_SESSION_SECRET/u;
+const invalidAdminPassword = /ADMIN_PASSWORD/u;
 
 afterEach(() => {
   if (savedPassword === undefined) {

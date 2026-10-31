@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
+
 import { sendVisitEmail } from "../src/lib/email.server.ts";
 
 const savedEmail = process.env.NOTIFY_EMAIL;
@@ -22,10 +23,8 @@ test("failed Notice stores only the Resend status, not the response body", async
   process.env.NOTIFY_EMAIL = "operador@example.com";
   process.env.RESEND_API_KEY = "re_test_key";
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async () =>
-    new Response(JSON.stringify({ message: "re_test_key leaked" }), {
-      status: 403,
-    });
+  globalThis.fetch = () =>
+    Response.json({ message: "re_test_key leaked" }, { status: 403 });
 
   let result;
   try {

@@ -3,7 +3,7 @@ function asRecord(input: unknown): Record<string, unknown> {
     return {};
   }
   if (typeof input !== "object" || Array.isArray(input)) {
-    throw new Error("Invalid input");
+    throw new TypeError("Invalid input");
   }
   return input as Record<string, unknown>;
 }
@@ -17,7 +17,7 @@ function optionalString(
     return;
   }
   if (typeof value !== "string") {
-    throw new Error(`Invalid ${field}`);
+    throw new TypeError(`Invalid ${field}`);
   }
   return value;
 }
